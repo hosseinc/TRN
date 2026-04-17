@@ -1,122 +1,23 @@
-name: TRN Darwin ARM Build
+name: Build Workflow
 
 on:
-  workflow_dispatch:
-    inputs:
-      tag:
-        description: "Release Tag and version"
-        required: true
+  push:
+    branches:
+      - main
 
 jobs:
-  build-go:
-    permissions:
-      contents: read
-    strategy:
-      matrix:
-        include:
-          - cross_os: darwin
-            cross_arch: arm64
-            go_version: "1.25.9"
-    runs-on: macos-latest
-    env:
-      DEST: ${{ github.workspace }}/deployment/${{ matrix.cross_os }}-${{ matrix.cross_arch }}
+  build:
+    runs-on: macos-arm64
     steps:
-      - name: Checking out sources
-        uses: actions/checkout@v4.2.2
-      - name: Cache Common Download
-        id: cache-common
-        uses: actions/cache@v4.2.3
-        with:
-          path: artifacts.tgz
-          key: CommonCache-${{ matrix.cross_os }}-${{ matrix.cross_arch }}-${{ hashFiles('script/build_go.sh', 'core/*') }}-${{ matrix.go_version }}
-      - name: Install Golang
-        if: steps.cache-common.outputs.cache-hit != 'true'
-        uses: actions/setup-go@v5.5.0
-        with:
-          go-version: ${{ matrix.go_version }}
-          cache-dependency-path: |
-            core/server/go.sum
-      - name: Install Protoc
-        if: steps.cache-common.outputs.cache-hit != 'true'
-        uses: arduino/setup-protoc@v3
-        with:
-          version: "31.1"
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Installing protoc-gen-go
-        if: steps.cache-common.outputs.cache-hit != 'true'
-        run: |
-          go install github.com/golang/protobuf/protoc-gen-go@latest
-          go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
-      - name: Build golang parts
-        if: steps.cache-common.outputs.cache-hit != 'true'
-        shell: bash
-        run: |
-          GOOS=${{ matrix.cross_os }} GOARCH=${{ matrix.cross_arch }} ./script/build_go.sh
-      - name: Tar files
-        if: steps.cache-common.outputs.cache-hit != 'true'
-        run: tar czvf artifacts.tgz ./deployment
-      - name: Uploading Artifact
-        uses: actions/upload-artifact@v4.6.2
-        with:
-          name: TRN-${{ github.sha }}-Common-${{ matrix.cross_os }}-${{ matrix.cross_arch }}
-          path: artifacts.tgz
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-  build-cpp:
-    permissions:
-      contents: read
-    needs:
-      - build-go
-    strategy:
-      matrix:
-        include:
-          - platform: macos-latest
-            qt_version: "6.11.0"
-            target: arm64
-            dest_suffix: darwin-arm64
-    runs-on: ${{ matrix.platform }}
-    env:
-      ACTIONS_ALLOW_UNSECURE_COMMANDS: true
-      INPUT_VERSION: ${{ github.event.inputs.tag }}
-      DEST: ${{ github.workspace }}/deployment/${{ matrix.dest_suffix }}
-      DEST_SUFFIX: ${{ matrix.dest_suffix }}
-      ARCH: ${{ matrix.target }}
-    steps:
-      - name: Checking out sources
-        uses: actions/checkout@v4.2.2
-        with:
-          submodules: "recursive"
-      - name: Download Artifacts
-        uses: actions/download-artifact@v4.3.0
-        with:
-          path: download-artifact
-      - name: Install Qt
-        uses: jurplel/install-qt-action@v4.3.0
-        with:
-          version: ${{ matrix.qt_version }}
-          setup-python: true
-          cache: true
-          cache-key-prefix: QtCache-${{ matrix.dest_suffix }}
-      - name: macOS - Generate MakeFile and Build
-        shell: bash
+      - name: Build App
         run: |
-          mkdir build
-          cd build
-          curl -fLso srslist.h "https://raw.githubusercontent.com/throneproj/routeprofiles/rule-set/srslist.h"
-          cmake -GNinja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DNKR_PACKAGE_MACOS=1 -DCMAKE_OSX_DEPLOYMENT_TARGET=10.15 -DCMAKE_OSX_ARCHITECTURES=${{ matrix.target }} ..
-          ninja
-          cd ..
-          ./script/deploy_macos.sh
-      - name: Rename Throne.app to TRN.app
-        shell: bash
-        run: |
-          if [ -d "deployment/${{ matrix.dest_suffix }}/Throne.app" ]; then
-            mv deployment/${{ matrix.dest_suffix }}/Throne.app deployment/${{ matrix.dest_suffix }}/TRN.app
-          fi
-      - name: Tar files
-        shell: bash
-        run: tar czvf artifacts.tgz ./deployment
-      - name: Uploading Artifact
-        uses: actions/upload-artifact@v4.6.2
+          mv Throne.app TRN.app
+
+      - name: Save Artifacts
+        uses: actions/upload-artifact@v2
         with:
-          name: TRN-${{ github.sha }}-${{ matrix.dest_suffix }}
-          path: artifacts.tgz
+          name: TRN-app
+          path: TRN.app
