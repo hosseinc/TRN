@@ -368,13 +368,13 @@ set_property(TARGET Throne PROPERTY AUTORCC ON)
 
 # Target Source macOS
 
-set(MACOSX_ICON ${CMAKE_SOURCE_DIR}/res/Throne.icns)
+set(MACOSX_ICON ${CMAKE_SOURCE_DIR}/res/TRN.icns)
 if (APPLE)
     target_sources(Throne PRIVATE ${MACOSX_ICON})
 endif ()
 
 set_target_properties(Throne PROPERTIES
-        MACOSX_BUNDLE_ICON_FILE "Throne.icns"
+        MACOSX_BUNDLE_ICON_FILE "TRN.icns"
         RESOURCE ${MACOSX_ICON}
         MACOSX_BUNDLE_INFO_PLIST ${CMAKE_SOURCE_DIR}/res/MacOSXBundleInfo.plist
         MACOSX_BUNDLE_GUI_IDENTIFIER moe.TRN.macosx
