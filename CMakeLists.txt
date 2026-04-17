@@ -361,19 +361,19 @@ qt_add_executable(TRN
 
 # Target
 
-set_property(TARGET Throne PROPERTY AUTOUIC ON)
-set_property(TARGET Throne PROPERTY AUTOMOC ON)
-set_property(TARGET Throne PROPERTY AUTORCC ON)
+set_property(TARGET TRN PROPERTY AUTOUIC ON)
+set_property(TARGET TRN PROPERTY AUTOMOC ON)
+set_property(TARGET TRN PROPERTY AUTORCC ON)
 
 
 # Target Source macOS
 
 set(MACOSX_ICON ${CMAKE_SOURCE_DIR}/res/TRN.icns)
 if (APPLE)
-    target_sources(Throne PRIVATE ${MACOSX_ICON})
+    target_sources(TRN PRIVATE ${MACOSX_ICON})
 endif ()
 
-set_target_properties(Throne PROPERTIES
+set_target_properties(TRN PROPERTIES
         MACOSX_BUNDLE_ICON_FILE "TRN.icns"
         RESOURCE ${MACOSX_ICON}
         MACOSX_BUNDLE_INFO_PLIST ${CMAKE_SOURCE_DIR}/res/MacOSXBundleInfo.plist
@@ -394,19 +394,19 @@ set(TS_FILES
 set(LUPDATE_OPTIONS
         -locations none -no-obsolete
 )
-qt_add_lupdate(Throne TS_FILES ${TS_FILES} OPTIONS ${LUPDATE_OPTIONS})
-qt_add_lrelease(Throne TS_FILES ${TS_FILES} QM_FILES_OUTPUT_VARIABLE QM_FILES)
+qt_add_lupdate(TRN TS_FILES ${TS_FILES} OPTIONS ${LUPDATE_OPTIONS})
+qt_add_lrelease(TRN TS_FILES ${TS_FILES} QM_FILES_OUTPUT_VARIABLE QM_FILES)
 
 configure_file(res/translations/translations.qrc ${CMAKE_BINARY_DIR} COPYONLY)
-target_sources(Throne PRIVATE ${CMAKE_BINARY_DIR}/translations.qrc)
+target_sources(TRN PRIVATE ${CMAKE_BINARY_DIR}/translations.qrc)
 
 # Target Link
 
-target_link_libraries(Throne PRIVATE
+target_link_libraries(TRN PRIVATE
         Qt6::Widgets Qt6::Network Qt6::DBus
         Threads::Threads
         ${NKR_EXTERNAL_TARGETS}
         ${PLATFORM_LIBRARIES}
 )
 
-qt_finalize_executable(Throne)
+qt_finalize_executable(TRN)
