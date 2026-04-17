@@ -1,4 +1,4 @@
-name: Throne build matrix
+name: TRN build matrix
 on:
   workflow_dispatch:
     inputs:
@@ -65,7 +65,7 @@ jobs:
       - name: Install Golang For Legacy OS
         if: steps.cache-common.outputs.cache-hit != 'true' && contains( matrix.cross_os, 'legacy' )
         run: |
-          curl -L -o go.zip https://github.com/throneproj/env_windows_legacy/releases/download/latest/go.zip
+          curl -L -o go.zip https://github.com/TRNproj/env_windows_legacy/releases/download/latest/go.zip
           7z x go.zip
       - name: Install Protoc
         if: steps.cache-common.outputs.cache-hit != 'true'
@@ -89,7 +89,7 @@ jobs:
       - name: Uploading Artifact
         uses: actions/upload-artifact@v4.6.2
         with:
-          name: Throne-${{ github.sha }}-Common-${{ matrix.cross_os }}-${{ matrix.cross_arch }}
+          name: TRN-${{ github.sha }}-Common-${{ matrix.cross_os }}-${{ matrix.cross_arch }}
           path: artifacts.tgz
   build-cpp:
     permissions:
@@ -179,15 +179,15 @@ jobs:
         shell: bash
         if: contains( matrix.platform, 'windows' )
         run: |
-          curl -L -o qt.7z https://github.com/throneproj/buildqt/releases/download/Qt_${{ matrix.qt_version }}/Qt_${{ matrix.qt_version }}_${{ matrix.target }}.7z
+          curl -L -o qt.7z https://github.com/TRNproj/buildqt/releases/download/Qt_${{ matrix.qt_version }}/Qt_${{ matrix.qt_version }}_${{ matrix.target }}.7z
           7z x qt.7z
-          curl -L -o openssl.7z https://github.com/throneproj/env_windows_legacy/releases/download/latest/openssl_${{ matrix.target }}.7z
+          curl -L -o openssl.7z https://github.com/TRNproj/env_windows_legacy/releases/download/latest/openssl_${{ matrix.target }}.7z
           7z x openssl.7z
           export CMAKE_PREFIX_PATH=$PWD/Qt/lib/cmake
           export OPENSSL_ROOT_DIR=$PWD/openssl
           mkdir build
           cd build
-          curl -fLso srslist.h "https://raw.githubusercontent.com/throneproj/routeprofiles/rule-set/srslist.h"
+          curl -fLso srslist.h "https://raw.githubusercontent.com/TRNproj/routeprofiles/rule-set/srslist.h"
           cmake -GNinja -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
           ninja
           cd ..
@@ -199,7 +199,7 @@ jobs:
           choco install nsis
           cp .\script\windows_installer.nsi .
           "C:\Program Files (x86)\NSIS\makensis.exe" windows_installer.nsi
-          cp ThroneSetup.exe deployment/
+          cp TRNSetup.exe deployment/
       - name: Linux - Generate MakeFile and Build
         shell: bash
         if: contains( matrix.platform, 'ubuntu' ) && matrix.qt_version != '6.2.0'
@@ -207,7 +207,7 @@ jobs:
           sudo apt update && sudo apt upgrade -y
           mkdir build
           cd build
-          curl -fLso srslist.h "https://raw.githubusercontent.com/throneproj/routeprofiles/rule-set/srslist.h"
+          curl -fLso srslist.h "https://raw.githubusercontent.com/TRNproj/routeprofiles/rule-set/srslist.h"
           cmake -GNinja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_EXE_LINKER_FLAGS="-static-libgcc -static-libstdc++" ..
           ninja
           cd ..
@@ -220,7 +220,7 @@ jobs:
           sudo apt install qt6-base-dev qt6-tools-dev qt6-tools-dev-tools qt6-l10n-tools libqt6svg6-dev qt6-translations-l10n libglx-dev libgl1-mesa-dev
           mkdir build
           cd build
-          curl -fLso srslist.h "https://raw.githubusercontent.com/throneproj/routeprofiles/rule-set/srslist.h"
+          curl -fLso srslist.h "https://raw.githubusercontent.com/TRNproj/routeprofiles/rule-set/srslist.h"
           cmake -GNinja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_EXE_LINKER_FLAGS="-static-libgcc" ..
           ninja
           cd ..
@@ -231,7 +231,7 @@ jobs:
         run: |
           mkdir build
           cd build
-          curl -fLso srslist.h "https://raw.githubusercontent.com/throneproj/routeprofiles/rule-set/srslist.h"
+          curl -fLso srslist.h "https://raw.githubusercontent.com/TRNproj/routeprofiles/rule-set/srslist.h"
           cmake -GNinja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DNKR_PACKAGE_MACOS=1 -DCMAKE_OSX_DEPLOYMENT_TARGET=10.15 -DCMAKE_OSX_ARCHITECTURES=${{ matrix.target }} ..
           ninja
           cd ..
@@ -243,7 +243,7 @@ jobs:
       - name: Uploading Artifact
         uses: actions/upload-artifact@v4.6.2
         with:
-          name: Throne-${{ github.sha }}-${{ matrix.dest_suffix }}
+          name: TRN-${{ github.sha }}-${{ matrix.dest_suffix }}
           path: artifacts.tgz
   publish:
     name: Pack & Publish Release
@@ -269,72 +269,72 @@ jobs:
           mkdir debug
           ####
           bash ../script/pack_debian.sh ${{ github.event.inputs.tag }} amd64
-          mv Throne.deb Throne-${{ github.event.inputs.tag }}-debian-amd64.deb
-          rm -rf Throne
+          mv TRN.deb TRN-${{ github.event.inputs.tag }}-debian-amd64.deb
+          rm -rf TRN
           ####
           bash ../script/pack_debian.sh ${{ github.event.inputs.tag }} amd64 systemqt
-          mv Throne.deb Throne-${{ github.event.inputs.tag }}-debian-amd64-system-qt.deb
-          rm -rf Throne
+          mv TRN.deb TRN-${{ github.event.inputs.tag }}-debian-amd64-system-qt.deb
+          rm -rf TRN
           ####
           bash ../script/pack_debian.sh ${{ github.event.inputs.tag }} arm64
-          mv Throne.deb Throne-${{ github.event.inputs.tag }}-debian-arm64.deb
-          rm -rf Throne
+          mv TRN.deb TRN-${{ github.event.inputs.tag }}-debian-arm64.deb
+          rm -rf TRN
           ####
           bash ../script/pack_debian.sh ${{ github.event.inputs.tag }} arm64 systemqt
-          mv Throne.deb Throne-${{ github.event.inputs.tag }}-debian-arm64-system-qt.deb
-          rm -rf Throne
+          mv TRN.deb TRN-${{ github.event.inputs.tag }}-debian-arm64-system-qt.deb
+          rm -rf TRN
           ####
-          mv linux-amd64 Throne
-          mv Throne/Throne.debug debug/Throne-${{ github.event.inputs.tag }}-linux-amd64.debug
-          zip -9 -r Throne-${{ github.event.inputs.tag }}-linux-amd64.zip Throne
-          rm -rf Throne
+          mv linux-amd64 TRN
+          mv TRN/TRN.debug debug/TRN-${{ github.event.inputs.tag }}-linux-amd64.debug
+          zip -9 -r TRN-${{ github.event.inputs.tag }}-linux-amd64.zip TRN
+          rm -rf TRN
           ####
-          mv linux-arm64 Throne
-          mv Throne/Throne.debug debug/Throne-${{ github.event.inputs.tag }}-linux-arm64.debug
-          zip -9 -r Throne-${{ github.event.inputs.tag }}-linux-arm64.zip Throne
-          rm -rf Throne
+          mv linux-arm64 TRN
+          mv TRN/TRN.debug debug/TRN-${{ github.event.inputs.tag }}-linux-arm64.debug
+          zip -9 -r TRN-${{ github.event.inputs.tag }}-linux-arm64.zip TRN
+          rm -rf TRN
           ####
-          mv ThroneSetup.exe Throne-${{ github.event.inputs.tag }}-windows64-installer.exe
-          mv windows-amd64 Throne
-          mv Throne/Throne.pdb debug/Throne-${{ github.event.inputs.tag }}-windows-amd64.pdb
-          zip -9 -r Throne-${{ github.event.inputs.tag }}-windows64.zip Throne
-          rm -rf Throne
+          mv TRNSetup.exe TRN-${{ github.event.inputs.tag }}-windows64-installer.exe
+          mv windows-amd64 TRN
+          mv TRN/TRN.pdb debug/TRN-${{ github.event.inputs.tag }}-windows-amd64.pdb
+          zip -9 -r TRN-${{ github.event.inputs.tag }}-windows64.zip TRN
+          rm -rf TRN
           ####
-          mv windows-arm64 Throne
-          mv Throne/Throne.pdb debug/Throne-${{ github.event.inputs.tag }}-windows-arm64.pdb
-          zip -9 -r Throne-${{ github.event.inputs.tag }}-windows-arm64.zip Throne
-          rm -rf Throne
+          mv windows-arm64 TRN
+          mv TRN/TRN.pdb debug/TRN-${{ github.event.inputs.tag }}-windows-arm64.pdb
+          zip -9 -r TRN-${{ github.event.inputs.tag }}-windows-arm64.zip TRN
+          rm -rf TRN
           ####
-          mv windowslegacy-386 Throne
-          mv Throne/Throne.pdb debug/Throne-${{ github.event.inputs.tag }}-windowslegacy-386.pdb
-          zip -9 -r Throne-${{ github.event.inputs.tag }}-windows32.zip Throne
-          rm -rf Throne
+          mv windowslegacy-386 TRN
+          mv TRN/TRN.pdb debug/TRN-${{ github.event.inputs.tag }}-windowslegacy-386.pdb
+          zip -9 -r TRN-${{ github.event.inputs.tag }}-windows32.zip TRN
+          rm -rf TRN
           ####
-          mv windowslegacy-amd64 Throne
-          mv Throne/Throne.pdb debug/Throne-${{ github.event.inputs.tag }}-windowslegacy-amd64.pdb
-          zip -9 -r Throne-${{ github.event.inputs.tag }}-windowslegacy64.zip Throne
-          rm -rf Throne
+          mv windowslegacy-amd64 TRN
+          mv TRN/TRN.pdb debug/TRN-${{ github.event.inputs.tag }}-windowslegacy-amd64.pdb
+          zip -9 -r TRN-${{ github.event.inputs.tag }}-windowslegacy64.zip TRN
+          rm -rf TRN
           ####
-          mkdir Throne
-          mv darwin-arm64/Throne.app Throne/Throne.app
-          mv Throne/Throne.app/Contents/MacOS/Throne.dSYM debug/Throne-${{ github.event.inputs.tag }}-macos-arm64.dSYM
-          zip -9 --symlinks -r Throne-${{ github.event.inputs.tag }}-macos-arm64.zip Throne
+          mkdir TRN
+          mv darwin-arm64/TRN.app TRN/TRN.app
+          mv TRN/TRN.app/Contents/MacOS/TRN.dSYM debug/TRN-${{ github.event.inputs.tag }}-macos-arm64.dSYM
+          zip -9 --symlinks -r TRN-${{ github.event.inputs.tag }}-macos-arm64.zip TRN
           rm -rf darwin-arm64
-          rm -rf Throne
+          rm -rf TRN
           ####
-          mkdir Throne
-          mv darwin-amd64/Throne.app Throne/Throne.app
-          mv Throne/Throne.app/Contents/MacOS/Throne.dSYM debug/Throne-${{ github.event.inputs.tag }}-macos-amd64.dSYM
-          zip -9 --symlinks -r Throne-${{ github.event.inputs.tag }}-macos-amd64.zip Throne
+          mkdir TRN
+          mv darwin-amd64/TRN.app TRN/TRN.app
+          mv TRN/TRN.app/Contents/MacOS/TRN.dSYM debug/TRN-${{ github.event.inputs.tag }}-macos-amd64.dSYM
+          zip -9 --symlinks -r TRN-${{ github.event.inputs.tag }}-macos-amd64.zip TRN
           rm -rf darwin-amd64
-          rm -rf Throne
+          rm -rf TRN
           ####
-          mkdir Throne
-          mv darwinlegacy-amd64/Throne.app Throne/Throne.app
-          mv Throne/Throne.app/Contents/MacOS/Throne.dSYM debug/Throne-${{ github.event.inputs.tag }}-macoslegacy-amd64.dSYM
-          zip -9 --symlinks -r Throne-${{ github.event.inputs.tag }}-macoslegacy-amd64.zip Throne
+          mkdir TRN
+          mv darwinlegacy-amd64/TRN.app TRN/TRN.app
+          mv TRN/TRN.app/Contents/MacOS/TRN.dSYM debug/TRN-${{ github.event.inputs.tag }}-macoslegacy-amd64.dSYM
+          zip -9 --symlinks -r TRN-${{ github.event.inputs.tag }}-macoslegacy-amd64.zip TRN
           rm -rf darwinlegacy-amd64
-          rm -rf Throne
+          rm -rf TRN
           ####
           zip -9 -r debug-symbols.zip debug
       - name: Uploading Debug Artifact
