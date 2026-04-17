@@ -1,13 +1,12 @@
-name: TRN build matrix - macOS ARM64
+name: TRN Darwin ARM Build
+
 on:
   workflow_dispatch:
     inputs:
       tag:
         description: "Release Tag and version"
         required: true
-      publish:
-        description: "r for normal release, p for prerelease, leave empty to not publish anything"
-        required: false
+
 jobs:
   build-go:
     permissions:
@@ -18,7 +17,6 @@ jobs:
           - cross_os: darwin
             cross_arch: arm64
             go_version: "1.25.9"
-      fail-fast: false
     runs-on: macos-latest
     env:
       DEST: ${{ github.workspace }}/deployment/${{ matrix.cross_os }}-${{ matrix.cross_arch }}
@@ -75,7 +73,6 @@ jobs:
             qt_version: "6.11.0"
             target: arm64
             dest_suffix: darwin-arm64
-      fail-fast: false
     runs-on: ${{ matrix.platform }}
     env:
       ACTIONS_ALLOW_UNSECURE_COMMANDS: true
@@ -104,11 +101,17 @@ jobs:
         run: |
           mkdir build
           cd build
-          curl -fLso srslist.h "https://raw.githubusercontent.com/TRNproj/routeprofiles/rule-set/srslist.h"
+          curl -fLso srslist.h "https://raw.githubusercontent.com/throneproj/routeprofiles/rule-set/srslist.h"
           cmake -GNinja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DNKR_PACKAGE_MACOS=1 -DCMAKE_OSX_DEPLOYMENT_TARGET=10.15 -DCMAKE_OSX_ARCHITECTURES=${{ matrix.target }} ..
           ninja
           cd ..
           ./script/deploy_macos.sh
+      - name: Rename Throne.app to TRN.app
+        shell: bash
+        run: |
+          if [ -d "deployment/${{ matrix.dest_suffix }}/Throne.app" ]; then
+            mv deployment/${{ matrix.dest_suffix }}/Throne.app deployment/${{ matrix.dest_suffix }}/TRN.app
+          fi
       - name: Tar files
         shell: bash
         run: tar czvf artifacts.tgz ./deployment
@@ -117,53 +120,3 @@ jobs:
         with:
           name: TRN-${{ github.sha }}-${{ matrix.dest_suffix }}
           path: artifacts.tgz
-
-  publish:
-    name: Pack & Publish Release
-    runs-on: ubuntu-latest
-    needs:
-      - build-cpp
-    permissions:
-      contents: write
-      actions: read
-    steps:
-      - name: Checking out sources
-        uses: actions/checkout@v4.2.2
-      - name: Download Artifacts
-        uses: actions/download-artifact@v4.3.0
-        with:
-          path: download-artifact
-      - name: Pack
-        run: |
-          curl -Lo - https://github.com/tcnksm/ghr/releases/download/v0.17.0/ghr_v0.17.0_linux_amd64.tar.gz | tar xzv
-          mv ghr*linux_amd64/ghr .
-          find . -name artifacts.tgz | xargs -n1 tar xvzf
-          cd deployment
-          mkdir debug
-          ####
-          mkdir TRN
-          mv darwin-arm64/TRN.app TRN/TRN.app
-          mv TRN/TRN.app/Contents/MacOS/TRN.dSYM debug/TRN-${{ github.event.inputs.tag }}-macos-arm64.dSYM
-          zip -9 --symlinks -r TRN-${{ github.event.inputs.tag }}-macos-arm64.zip TRN
-          rm -rf darwin-arm64
-          rm -rf TRN
-          ####
-          zip -9 -r debug-symbols.zip debug
-      - name: Uploading Debug Artifact
-        uses: actions/upload-artifact@v4.6.2
-        with:
-          name: Debug-${{ github.sha }}
-          path: deployment/debug-symbols.zip
-      - name: Uploading Artifact
-        uses: actions/upload-artifact@v4.6.2
-        with:
-          name: Deployment-${{ github.sha }}
-          path: deployment
-      - name: PreRelease
-        if: github.event.inputs.publish == 'p'
-        run: |
-          ./ghr -prerelease -delete -c ${{ github.sha }} -t "${{ github.token }}" -n "${{ github.event.inputs.tag }}" "${{ github.event.inputs.tag }}" deployment
-      - name: Release
-        if: github.event.inputs.publish == 'r'
-        run: |
-          ./ghr -delete -c ${{ github.sha }} -t "${{ github.token }}" -n "${{ github.event.inputs.tag }}" "${{ github.event.inputs.tag }}" deployment
