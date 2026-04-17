@@ -218,7 +218,7 @@ set(PROJECT_SOURCES
         include/ui/setting/RouteItem.h
         include/ui/setting/RouteItem.ui
 
-        res/Throne.qrc
+        res/TRN.qrc
         ${QV2RAY_RC}
         res/darkstyle.qrc
         src/ui/profile/edit_ssh.cpp
