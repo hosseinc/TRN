@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.20)
 
-project(Throne VERSION 0.1)
+project(TRN VERSION 0.1)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
@@ -354,7 +354,7 @@ if (NOT APPLE AND Qt6_VERSION VERSION_GREATER_EQUAL 6.9.0)
 endif ()
 
 # Qt exe
-qt_add_executable(Throne
+qt_add_executable(TRN
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
 )
@@ -377,7 +377,7 @@ set_target_properties(Throne PROPERTIES
         MACOSX_BUNDLE_ICON_FILE "Throne.icns"
         RESOURCE ${MACOSX_ICON}
         MACOSX_BUNDLE_INFO_PLIST ${CMAKE_SOURCE_DIR}/res/MacOSXBundleInfo.plist
-        MACOSX_BUNDLE_GUI_IDENTIFIER moe.Throne.macosx
+        MACOSX_BUNDLE_GUI_IDENTIFIER moe.TRN.macosx
         MACOSX_BUNDLE TRUE
         WIN32_EXECUTABLE TRUE
         UNITY_BUILD ON
