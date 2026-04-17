@@ -110,12 +110,6 @@ jobs:
           ninja
           cd ..
           ./script/deploy_macos.sh
-      - name: Rename Throne.app to TRN.app
-        shell: bash
-        run: |
-          if [ -d "deployment/${{ matrix.dest_suffix }}/Throne.app" ]; then
-            mv deployment/${{ matrix.dest_suffix }}/Throne.app deployment/${{ matrix.dest_suffix }}/TRN.app
-          fi
       - name: Tar files
         shell: bash
         run: tar czvf artifacts.tgz ./deployment
